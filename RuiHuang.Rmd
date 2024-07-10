@@ -5,6 +5,7 @@ date: "2024-07-08"
 ---
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+
 library(rerddap)
 ```
 
@@ -13,5 +14,6 @@ library(rerddap)
 #Loading dataset
 Tempinfo = info('erdCinpKfmT')
 tempset = tabledap(Tempinfo,fields = c('latitude', 'longitude', 'depth', 'time', 'temperature'))
+Heatwavedata = rast("subset.nc")
 ```
 
