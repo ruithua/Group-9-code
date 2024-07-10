@@ -10,6 +10,7 @@ library(rerddap)
 
 
 ```{r}
+#Loading dataset
 Tempinfo = info('erdCinpKfmT')
 tempset = tabledap(Tempinfo,fields = c('latitude', 'longitude', 'depth', 'time', 'temperature'))
 ```
