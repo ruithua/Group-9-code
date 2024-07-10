@@ -13,7 +13,9 @@ library(rerddap)
 ```{r}
 #Loading dataset
 Tempinfo = info('erdCinpKfmT')
-tempset = tabledap(Tempinfo,fields = c('latitude', 'longitude', 'depth', 'time', 'temperature'))
+tempset = tabledap(Tempinfo)
+Kelpinfo = info('erdCinpKfmRPC')
+kelpset = tabledap(Kelpinfo)
 Heatwavedata = rast("subset.nc")
 ```
 
