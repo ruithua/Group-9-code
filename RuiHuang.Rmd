@@ -22,7 +22,6 @@ Heatwavedata = rast("subset.nc")
 ```{r}
 temp_tempset = tempset %>% 
   mutate(data_char = as.character(time))
-lapply(temp_tempset, class)
 ```
 ```{r}
 temp_tempset = temp_tempset %>% 
@@ -53,7 +52,7 @@ ggplot() +
   geom_point(aes(x = timevector, y = avgtempvector))
 ggplot() +
   geom_point(aes(x = timevector, y = maxtempvector))
-lrdf = data.frame(avgtempvector,timevector)
-lm(avgtempvector~timevector ,data = lrdf)
+lrdf = data.frame(maxtempvector,timevector)
+lm(maxtempvector~timevector ,data = lrdf)
 ```
 
