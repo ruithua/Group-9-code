@@ -29,13 +29,12 @@ tempset_july1 = tempset %>%
 
 giantkelpset = kelpset %>%
   select(station, longitude, latitude, depth, time | contains("Macrocystis_pyrifera")) %>% 
-  filter(!is.na(Macrocystis_pyrifera_All_Mean)) %>% # now we have all the actual values for giant kelp cover within the time frame of the temperature dataset
+  filter(!is.na(Macrocystis_pyrifera_All_Mean) & time >= 1993-05-22) %>% # now we have all the actual values for giant kelp cover within the time frame of the temperature dataset
   group_by(time) %>% 
   mutate(percentcover = Macrocystis_pyrifera_All_Mean, meanpercentcover = mean(percentcover)) %>% # make the percent cover easier to type and take the average of it across all locations
-  select(-Macrocystis_pyrifera_All_Mean) %>%
-  ungroup() %>% 
-  relocate(percentcover, .after = time) %>%
-  arrange(time)
+  select(-Macrocystis_pyrifera_All_Mean) %>% # removing unnecessary variables 
+  relocate(percentcover, .after = time) %>% # formatting
+  arrange(time) # formatting
 
 ggplot(giantkelpset, aes(x = time, y = meanpercentcover)) + geom_point() + geom_line() # first look at the data 
 ```
