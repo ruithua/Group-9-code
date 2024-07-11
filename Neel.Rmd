@@ -38,6 +38,11 @@ ggplot(giantkelpset, aes(x = time, y = meanpercentcover, color = meandepth)) + g
 
 Heatwavedf = as.data.frame(Heatwavedata, xy = T)
 dates = seq(from = as.Date("1992-12-31"), to = as.Date("2008-1-1"), by = "day")
-heatwavedf = cbind(Heatwavedf, dates)
+
+hwdf_comp = Heatwavedf %>% 
+  mutate(x2 = x - 360) %>% 
+  relocate(x2, .after = x) %>% 
+  filter(x2 >= -118.4 | x2 <= -120.4) %>% 
+  filter(y >= 32.8, y <= 34.05)
 
 ```
