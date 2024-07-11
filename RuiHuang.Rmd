@@ -53,5 +53,7 @@ ggplot() +
   geom_point(aes(x = timevector, y = avgtempvector))
 ggplot() +
   geom_point(aes(x = timevector, y = maxtempvector))
+lrdf = data.frame(avgtempvector,timevector)
+lm(avgtempvector~timevector ,data = lrdf)
 ```
 
