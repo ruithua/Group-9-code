@@ -33,4 +33,9 @@ giantkelpset = kelpset %>%
 
 ggplot(giantkelpset, aes(x = time, y = meanpercentcover, color = meandepth)) + geom_point() + geom_line() # first look at the data 
 ```
+```{r}
+# Working with the .nc
+
+Heatwavedf = as.data.frame(Heatwavedata, xy = T)
+```
 
