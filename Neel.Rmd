@@ -10,7 +10,7 @@ library(rerddap)
 library(terra)
 library(tidyverse)
 ```
-Hello
+Hello, have a good day!
 ```{r}
 #Loading Data
 Tempinfo = info('erdCinpKfmT')
