@@ -5,25 +5,34 @@ date: "2024-07-08"
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE, message = FALSE)
+library(rerddap)
+library(terra)
+library(tidyverse)
 ```
 Hello
-## R Markdown
+```{r}
+#Loading Data
+Tempinfo = info('erdCinpKfmT')
+tempset = tabledap(Tempinfo)
+Kelpinfo = info('erdCinpKfmRPC')
+kelpset = tabledap(Kelpinfo)
+Heatwavedata = rast("subset.nc")
+```
+```{r}
+# Only taking July 1st for the temperature datasets
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+tempset_july1 = tempset %>%
+  filter()
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+# Only taking significant giant kelp data
 
-```{r cars}
-summary(cars)
+giantkelpset = kelpset %>%
+  select(station, longitude, latitude, depth, time | contains("Macrocystis_pyrifera")) %>% 
+  filter(!is.na(Macrocystis_pyrifera_All_Mean)) %>% # now we have all the actual values for giant kelp cover
+  group_by(time) %>% 
+  mutate(percentcover = Macrocystis_pyrifera_All_Mean, meanpercentcover = mean(percentcover)) # make the percent cover easier to type and take the average of it across all locations
+
+ggplot(giantkelpset, aes(x = time, y = meanpercentcover)) + geom_point() + geom_line()
 ```
 
-## Including Plots
-
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
-```
-
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
