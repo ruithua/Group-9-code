@@ -17,7 +17,7 @@ Tempinfo = info('erdCinpKfmT')
 tempset = tabledap(Tempinfo)
 Kelpinfo = info('erdCinpKfmRPC')
 kelpset = tabledap(Kelpinfo)
-Heatwavedata = rast("1992-2008Heatwaves.nc")
+Heatwavedata = rast("subset (1).nc")
 ```
 ```{r}
 # Only taking significant giant kelp data
@@ -37,6 +37,7 @@ ggplot(giantkelpset, aes(x = time, y = meanpercentcover, color = meandepth)) + g
 # Working with the .nc
 
 Heatwavedf = as.data.frame(Heatwavedata, xy = T)
+dates = seq(from = as.Date("1992-12-31"), to = as.Date("2008-1-1"), by = "day")
+heatwavedf = cbind(Heatwavedf, dates)
 
 ```
-
