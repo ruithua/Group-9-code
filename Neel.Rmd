@@ -32,6 +32,9 @@ giantkelpset = kelpset %>%
   arrange(time) # formatting
 
 ggplot(giantkelpset, aes(x = time, y = meanpercentcover, color = meandepth)) + geom_point() + geom_line() # first look at the data 
+
+mean(giantkelpset$longitude)
+mean(giantkelpset$latitude)
 ```
 ```{r}
 # Working with the .nc
@@ -43,6 +46,7 @@ hwdf_comp = Heatwavedf %>%
   mutate(x2 = x - 360) %>% 
   relocate(x2, .after = x) %>% 
   filter(x2 >= -118.4 | x2 <= -120.4) %>% 
-  filter(y >= 32.8, y <= 34.05)
+  filter(y >= 32.8, y <= 34.05) %>%
+  slice(18)
 
 ```
