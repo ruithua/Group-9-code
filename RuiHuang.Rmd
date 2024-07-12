@@ -70,6 +70,31 @@ hwdf_comp = Heatwavedf %>%
   mutate(x2 = x - 360) %>% 
   relocate(x2, .after = x) %>% 
   filter(x2 >= -118.4 | x2 <= -120.4) %>% 
-  filter(y >= 32.8, y <= 34.05)
+  filter(y >= 32.8, y <= 34.05) %>% 
+  slice(18)
+```
+
+```{r}
+hwvector = as.numeric(hwdf_comp[1,])
+timedate = as.Date("1992-12-31")
+count = 1
+filteredhwvector = rep(0, (2007-1993))
+for(i in 4:length(hwvector)){
+  if(grepl("-07-01",as.character(timedate),fixed = TRUE)){
+      filteredhwvector[count] = hwvector[i]
+      print(timedate)
+      count = count +1
+  }
+  timedate = timedate + 1
+}
+
+
+```
+```{r}
+tvector = c(0:14)
+ggplot() +
+  geom_point(aes(x = tvector, y = filteredhwvector))
+dfhw = data.frame(filteredhwvector, tvector)
+lm(filteredhwvector~tvector ,data = dfhw)
 ```
 
