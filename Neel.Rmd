@@ -43,10 +43,11 @@ Heatwavedf = as.data.frame(Heatwavedata, xy = T)
 dates = seq(from = as.Date("1992-12-31"), to = as.Date("2008-1-1"), by = "day")
 
 hwdf_comp = Heatwavedf %>% 
-  mutate(x2 = x - 360) %>% 
-  relocate(x2, .after = x) %>% 
-  filter(x2 >= -118.4 | x2 <= -120.4) %>% 
+  mutate(x = x - 360) %>% 
+  filter(x >= -118.4 | x <= -120.4) %>% 
   filter(y >= 32.8, y <= 34.05) %>%
   slice(18)
-
+  pivot_longer(cols = 3:5482,
+               names_to = "days",
+               values_to = "anomalies") # no applicable method for 'pivot_longer' applied to an object of class "c('integer', 'numeric')"
 ```
