@@ -72,6 +72,8 @@ avgtempvector = rep(0, 2007-1994+1)
 for(i in 1:length(tempvector)){
   avgtempvector[i] = tempvector[i]/repvector[i]
 }
+
+yearvector = seq(from = as.Date("1993-07-01"), to = as.Date("2007-07-01"), by = "year")
 ```
 Making it all one dataframe
 ``` {r}
