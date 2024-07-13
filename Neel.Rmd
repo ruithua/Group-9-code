@@ -55,12 +55,16 @@ hwdf_comp = Heatwavedf %>%
 
 Working with the temperature dataset (Jerry did this)
 ``` {r}
+# Filtering for July 1st
+
 temp_tempset = tempset %>% 
   mutate(data_char = as.character(time)) %>%
   filter(grepl("-07-01",data_char, fixed = TRUE))
 ```
 
 ``` {r}
+
+# Use a for loop to fill vectors for average and maximum temperature
 repvector = rep(0, 2007-1993+1)
 tempvector = rep(0, 2007-1993+1)
 maxtempvector = rep(0, 2007-1993+1)
@@ -76,14 +80,14 @@ for(i in 1:length(tempvector)){
   avgtempvector[i] = tempvector[i]/repvector[i]
 }
 
-date = seq(from = as.Date("1993-07-01"), to = as.Date("2007-07-01"), by = "year")
+date = seq(from = as.Date("1993-07-01"), to = as.Date("2007-07-01"), by = "year") # Create vectors of dates in the project
 ```
 Making it all one dataframe
 ``` {r}
 onedf = full_join(giantkelpset, hwdf_comp) %>% 
-  select(-x, -y)
+  select(-x, -y) # Merge the kelp dataframe and the heatwave dataframe and get rid of lat/lon for the heatwave df
 
-temporarydf = data.frame(date, avgtempvector, maxtempvector)
+temporarydf = data.frame(date, avgtempvector, maxtempvector) # create a dataframe out of the temperature and time vectors
 
-onedf = full_join(onedf, temporarydf)
+onedf = full_join(onedf, temporarydf) # add the temperature data to the one dataframe
 ```
