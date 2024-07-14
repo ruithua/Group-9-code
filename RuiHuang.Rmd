@@ -93,7 +93,9 @@ for(i in 4:length(hwvector)){
 ```{r}
 tvector = c(0:14)
 ggplot() +
-  geom_point(aes(x = tvector, y = filteredhwvector))
+  geom_point(aes(x = tvector, y = filteredhwvector)) +
+  geom_line() +
+  geom_smooth(method = "lm")
 dfhw = data.frame(filteredhwvector, tvector)
 lm(filteredhwvector~tvector ,data = dfhw)
 ```
