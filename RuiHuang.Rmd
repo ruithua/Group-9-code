@@ -13,7 +13,7 @@ library(tidyverse)
 
 ```{r}
 #Loading dataset
-Tempinfo = info('erdCinpKfmT')
+Tempinfo = info('')
 tempset = tabledap(Tempinfo)
 Kelpinfo = info('erdCinpKfmRPC')
 kelpset = tabledap(Kelpinfo)
@@ -71,30 +71,32 @@ hwdf_comp = Heatwavedf %>%
   relocate(x2, .after = x) %>% 
   filter(x2 >= -118.4 | x2 <= -120.4) %>% 
   filter(y >= 32.8, y <= 34.05) %>% 
-  slice(18)
+  slice(18) %>% 
+  mutate(date = dates, data_char = as.character(date)) %>% # adding the dates to the dataframe
+  filter(grepl("-07-01",data_char, fixed = TRUE)) %>% # filtering for July 1st
+  select(-data_char) # getting rid of the date as character variable (date as time is still there)
 ```
 
 ```{r}
-hwvector = as.numeric(hwdf_comp[1,])
-timedate = as.Date("1992-12-31")
-count = 1
-filteredhwvector = rep(0, (2007-1993))
-for(i in 4:length(hwvector)){
-  if(grepl("-07-01",as.character(timedate),fixed = TRUE)){
-      filteredhwvector[count] = hwvector[i]
-      print(timedate)
-      count = count +1
-  }
-  timedate = timedate + 1
-}
-
+giantkelpset = kelpset %>%
+  rename(date = time) %>% # this is for matching variables later for full_join
+  select(station, longitude, latitude, depth, date | contains("Macrocystis_pyrifera")) %>% 
+  filter(!is.na(Macrocystis_pyrifera_All_Mean) & date >= 1993-05-22) %>% # now we have all the actual values for giant kelp cover within the time frame of the temperature dataset
+  group_by(date) %>% 
+  mutate(percentcover = Macrocystis_pyrifera_All_Mean, meanpercentcover = mean(percentcover), meandepth = mean(depth)) %>% # make the percent cover easier to type and take the average of it across all locations
+  select(-Macrocystis_pyrifera_All_Mean) %>% # removing unnecessary variables 
+  relocate(percentcover, .after = date) %>% # formatting
+  arrange(date) # formatting
 
 ```
+
 ```{r}
-tvector = c(0:14)
-ggplot() +
-  geom_point(aes(x = tvector, y = filteredhwvector))
-dfhw = data.frame(filteredhwvector, tvector)
-lm(filteredhwvector~tvector ,data = dfhw)
+onedf = full_join(giantkelpset, hwdf_comp) %>% 
+  select(-x, -y) # Merge the kelp dataframe and the heatwave dataframe and get rid of lat/lon for the heatwave df
+
+temporarydf = data.frame(date, avgtempvector, maxtempvector) # create a dataframe out of the temperature and time vectors
+
+onedf = full_join(onedf, temporarydf) # add the temperature data to the one dataframe
 ```
+
 
