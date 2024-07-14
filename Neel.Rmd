@@ -10,6 +10,7 @@ library(rerddap)
 library(terra)
 library(tidyverse)
 ```
+
 Hello, have a good day! I hope you are well.
 ```{r}
 #Loading Data
@@ -19,6 +20,7 @@ Kelpinfo = info('erdCinpKfmRPC')
 kelpset = tabledap(Kelpinfo)
 Heatwavedata = rast("subset (1).nc")
 ```
+
 ```{r}
 # Only taking significant giant kelp data
 
@@ -39,11 +41,11 @@ ggplot(giantkelpset, aes(x = date, y = meanpercentcover, color = meandepth)) + g
 
 Heatwavedf = as.data.frame(Heatwavedata, xy = T) # turns it into a DF
 dates = seq(from = as.Date("1992-12-31"), to = as.Date("2008-1-1"), by = "day") # creates dates for the dataframe
-
+ 
 hwdf_comp = Heatwavedf %>%
   mutate(x = x - 360) %>% 
   filter(x >= -118.4 | x <= -120.4) %>% 
-  filter(y >= 32.8, y <= 34.05) %>% # limit the region to the Channel Islands
+  filter(y >= 32.8 & y <= 34.05) %>% # limit the region to the Channel Islands
   slice(18) %>% # the observation that fits the region the best
   pivot_longer(cols = 3:5482,
                names_to = "date",
