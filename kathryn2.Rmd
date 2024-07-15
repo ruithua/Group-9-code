@@ -5,11 +5,125 @@ date: "2024-07-15"
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+# Loading in packages
+knitr::opts_chunk$set(echo = TRUE, message = FALSE)
+# rerddap to work with data, terra to work with rasters
+library(rerddap)
+library(terra)
+library(tidyverse)
+```
+
+
+```{r}
+#Loading downloaded data in as Tempinfo (w/ mean temps info) and Kelpinfo (w/ kelp cover)
+Tempinfo = info('erdCinpKfmT')
+#tabledap pulls the data from erddap and puts it into a tabledap class (similar to dataframe)
+tempset = tabledap(Tempinfo)
+Kelpinfo = info('erdCinpKfmRPC')
+kelpset = tabledap(Kelpinfo)
+
+#Heatwavedata is a raster of our heatwave information (since spatial)
+Heatwavedata = rast("subset (1).nc")
 ```
 
 ```{r}
-# This is a test
-print("Attempt to push")
+# Only taking significant giant kelp data
+
+# Creating a dataframe with 
+giantkelpset = kelpset %>%
+  rename(date = time) %>% # this is for matching variables later for full_join (combining stuff into one dataframe)
+  # Selecting location (station/coordinates), depth of data, and date that have giant kelp
+  select(station, longitude, latitude, depth, date | contains("Macrocystis_pyrifera")) %>% 
+  # Filtering for non-NA values for kelp cover and within our time frame
+  filter(!is.na(Macrocystis_pyrifera_All_Mean) & date >= 1993-05-22) %>%
+  # Putting everything in chronologically
+  group_by(date) %>% 
+  # Adding columns (percentcover, meanpercentcover, meandepth)
+  mutate(percentcover = Macrocystis_pyrifera_All_Mean, meanpercentcover = mean(percentcover), meandepth = mean(depth)) %>% # make the percent cover easier to type and take the average of it across all locations
+  select(-Macrocystis_pyrifera_All_Mean) %>% # removing unnecessary variables (old column now that it's also here as percentcover)
+  relocate(percentcover, .after = date) %>% # formatting
+  arrange(date) # formatting
+
+ggplot(giantkelpset, aes(x = date, y = meanpercentcover, color = meandepth)) + geom_point() + geom_line() + geom_smooth(method = "lm") # first look at the data, not necessarily a particularly accurate/helpful graph though
 ```
 
+```{r}
+# Working with the .nc for the heatwave information
+# Heatwave data = anomolies (-10 is very abnormal on the cold side, 10 is very abnormally hot)
+
+Heatwavedf = as.data.frame(Heatwavedata, xy = T) # turns it into a DF
+# xy = TRUE puts the coordinates (longitude/latitude) in as columns x and y
+dates = seq(from = as.Date("1992-12-31"), to = as.Date("2008-1-1"), by = "day") # creates dates for the dataframe
+ 
+# Creating a dataframe (hwdf_comp) for the heatwave data that's formatted
+hwdf_comp = Heatwavedf %>%
+  # Longitude and latitude work weird, so we're subtracting 360 to match the kelp dataset format
+  mutate(x = x - 360) %>% 
+  # Filtering for our desired region (Channel Islands)
+  filter(x >= -118.4 | x <= -120.4) %>% 
+  filter(y >= 32.8 & y <= 34.05) %>%
+  # Has the closest longitude/latitude to the average of the kelp
+  slice(18) %>% # the observation that fits the region the best (takes row 18)
+  # 
+  pivot_longer(cols = 3:5482,
+               names_to = "date",
+               values_to = "anomalies") %>% # turns into a long format
+  mutate(date = dates, data_char = as.character(date)) %>% # adding the dates to the dataframe
+  filter(grepl("-07-01",data_char, fixed = TRUE)) %>% # filtering for July 1st
+  select(-data_char) # getting rid of the date as character variable (date as time is still there)
+```
+
+Working with the temperature dataset (Jerry did this)
+``` {r}
+# Filtering for July 1st with strings (instead of date class)
+
+temp_tempset = tempset %>% 
+  mutate(data_char = as.character(time)) %>%
+  filter(grepl("-07-01",data_char, fixed = TRUE))
+```
+
+``` {r}
+# Use a for loop to fill vectors for average and maximum temperature
+repvector = rep(0, 2007-1993+1)
+tempvector = rep(0, 2007-1993+1)
+maxtempvector = rep(0, 2007-1993+1)
+
+for(i in 1:nrow(temp_tempset)){
+  # Now looking for the year
+  # Isolating the year from the date (in string form, substring), then converting to number
+  yearval = as.numeric(str_sub(temp_tempset$data_char[i], 1, 4))
+  # Creating the index based on the year
+  index = yearval - 1993
+  
+  
+  # To find the mean
+  
+  # repvector is repetition vector (n)
+  repvector[index] = repvector[index] + 1
+  # tempvector is the overall sum of temperatures from that year's July 1
+  tempvector[index] = tempvector[index] + temp_tempset$temperature[i]
+  # maxtempvector is taking the max temperature of that year
+  maxtempvector[index] = max(maxtempvector[index], temp_tempset$temperature[i])
+}
+
+# Finding the average temperature per year
+avgtempvector = rep(0, 2007-1993+1)
+
+# Vector of averages by year
+for(i in 1:length(tempvector)){
+  avgtempvector[i] = tempvector[i]/repvector[i]
+}
+
+date = seq(from = as.Date("1993-07-01"), to = as.Date("2007-07-01"), by = "year") # Create vectors of dates in the project
+```
+
+Making it all one dataframe
+
+``` {r}
+onedf = full_join(giantkelpset, hwdf_comp) %>% 
+  select(-x, -y) # Merge the kelp dataframe and the heatwave dataframe and get rid of lat/lon for the heatwave df
+
+temporarydf = data.frame(date, avgtempvector, maxtempvector) # create a dataframe out of the temperature and time vectors
+
+onedf = full_join(onedf, temporarydf) # add the temperature data to the one dataframe
+```
