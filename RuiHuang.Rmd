@@ -75,7 +75,7 @@ hwdf_comp = Heatwavedf %>%
                names_to = "date",
                values_to = "anomalies") %>% # turns into a long format
   mutate(date = dates, data_char = as.character(date)) %>% # adding the dates to the dataframe
-  filter(grepl("-07-01",data_char, fixed = TRUE)) %>% # filtering for July 1st
+  filter(grepl("-y07-01",data_char, fixed = TRUE)) %>% # filtering for July 1st
   select(-data_char) # getting rid of the date as character variable (date as time is still there)
 ```
 
@@ -101,6 +101,10 @@ onedf = full_join(giantkelpset, hwdf_comp) %>%
 temporarydf = data.frame(date, avgtempvector, maxtempvector) # create a dataframe out of the temperature and time vectors
 
 onedf = full_join(onedf, temporarydf) # add the temperature data to the one dataframe
+```
+```{r}
+
+citation("base")
 ```
 
 
