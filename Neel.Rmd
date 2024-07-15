@@ -36,6 +36,7 @@ giantkelpset = kelpset %>%
 
 ggplot(giantkelpset, aes(x = date, y = meanpercentcover, color = meandepth)) + geom_point() + geom_line() + geom_smooth(method = "lm") # first look at the data 
 ```
+
 ```{r}
 # Working with the .nc for the heatwave
 
