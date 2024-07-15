@@ -109,7 +109,7 @@ for(i in 1:nrow(temp_tempset)){
 # Finding the average temperature per year
 avgtempvector = rep(0, 2007-1993+1)
 
-# Vector of averages by year
+# A vector of averages by year
 for(i in 1:length(tempvector)){
   avgtempvector[i] = tempvector[i]/repvector[i]
 }
