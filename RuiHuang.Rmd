@@ -103,7 +103,7 @@ temporarydf = data.frame(date, avgtempvector, maxtempvector) # create a datafram
 onedf = full_join(onedf, temporarydf) # add the temperature data to the one dataframe
 ```
 ```{r}
-
+print("a")
 citation("base")
 ```
 
