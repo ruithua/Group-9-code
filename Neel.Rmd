@@ -94,4 +94,11 @@ temporarydf = data.frame(date, avgtempvector, maxtempvector) # create a datafram
 
 onedf = full_join(onedf, temporarydf) # add the temperature data to the one dataframe
 ```
+Marine Heatwaves and Extreme Heatwaves
+``` {r}
+hwlogical = onedf$anomalies >= 2
+extremelogical = onedf$anomalies >= 1
 
+onedf$isheatwave = hwlogical
+onedf$isextreme = extremelogical
+```
