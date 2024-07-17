@@ -42,9 +42,9 @@ ggplot(giantkelpset, aes(x = date, y = meanpercentcover, color = meandepth)) + g
 
 Heatwavedf = as.data.frame(Heatwavedata, xy = T) # turns it into a DF
 dates = seq(from = as.Date("1992-12-31"), to = as.Date("2008-1-1"), by = "day") # creates dates for the dataframe
- 
+
 hwdf_comp = Heatwavedf %>%
-  mutate(x = x - 360) %>% 
+  mutate(x = x - 360) %>% # make it match kelp forest dataset
   filter(x >= -118.4 | x <= -120.4) %>% 
   filter(y >= 32.8 & y <= 34.05) %>% # limit the region to the Channel Islands
   slice(18) %>% # the observation that fits the region the best
@@ -72,8 +72,8 @@ repvector = rep(0, 2007-1993+1)
 tempvector = rep(0, 2007-1993+1)
 maxtempvector = rep(0, 2007-1993+1)
 for(i in 1:nrow(temp_tempset)){
-  yearval = as.numeric(str_sub(temp_tempset$data_char[i], 1, 4))
-  index = yearval - 1993
+  yearval = as.numeric(str_sub(temp_tempset$data_char[i], 1, 4)) # take year of date in string form and then convert to number
+  index = yearval - 1992 # find the index using the year of the date minus the starting year
   repvector[index] = repvector[index] + 1
   tempvector[index] = tempvector[index] + temp_tempset$temperature[i]
   maxtempvector[index] = max(maxtempvector[index], temp_tempset$temperature[i])
@@ -94,3 +94,4 @@ temporarydf = data.frame(date, avgtempvector, maxtempvector) # create a datafram
 
 onedf = full_join(onedf, temporarydf) # add the temperature data to the one dataframe
 ```
+
