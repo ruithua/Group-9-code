@@ -114,6 +114,7 @@ logit = function(x){
 onedf = onedf %>% 
   filter(percentcover != 0) %>% 
   mutate(logit_percentcover = logit(0.01 * percentcover)) %>% 
+  mutate(percentcoverperc = 0.01 * percentcover) %>% 
   mutate(date_num = as.numeric(str_sub(as.character(date),1,4))-1993)
 ```
 
@@ -152,8 +153,9 @@ summary(g_model)
 plot.Gam(g_model)
 ```
 ```{r}
-g_model2 = gam(logit_percentcover ~ s(maxtempvector, df=1) + s(avgtempvector, df =1) + s(anomalies, df = 1),
-            family = "gaussian", data = onedf)
+g_model2 = gam(percentcoverperc ~ s(maxtempvector, df=1) + s(avgtempvector, df =1) + s(anomalies, df = 2)+
+                 s(date_num, df=1),
+            family = "binomial", data = onedf)
 summary(g_model2)
 plot(g_model2)
 ```
