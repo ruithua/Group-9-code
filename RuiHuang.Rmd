@@ -153,8 +153,8 @@ summary(g_model)
 plot.Gam(g_model)
 ```
 ```{r}
-g_model2 = gam(percentcoverperc ~ s(maxtempvector, df=1) + s(avgtempvector, df =1) + s(anomalies, df = 2)+
-                 s(date_num, df=1),
+g_model2 = gam(percentcoverperc ~ s(maxtempvector, df=1.2) + avgtempvector + s(anomalies, df = 1.3)+
+                 date_num,
             family = "binomial", data = onedf)
 summary(g_model2)
 plot(g_model2)
@@ -178,6 +178,6 @@ ggplot(hwdf_notcomp) + geom_point(aes(x = year, y = maxanomaly)) + geom_smooth(a
 ```
 
 ```{r}
-
+t.test(log)
 ```
 
