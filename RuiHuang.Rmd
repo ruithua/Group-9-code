@@ -160,3 +160,24 @@ summary(g_model2)
 plot(g_model2)
 ```
 
+```{r}
+hwdf_notcomp = Heatwavedf %>% 
+  mutate(x = x - 360) %>% 
+  filter(x >= -118.4 | x <= -120.4) %>% 
+  filter(y >= 32.8 & y <= 34.05) %>%
+  slice(18) %>% 
+   pivot_longer(cols = 3:5482,
+               names_to = "date",
+               values_to = "anomalies") %>% 
+  mutate(date = dates, date_char = as.character(date), year = as.numeric(format(date, '%Y'))) %>% 
+  group_by(year) %>% 
+  summarize(maxanomaly = max(anomalies)) %>% 
+  filter(maxanomaly > -0.5)
+  
+ggplot(hwdf_notcomp) + geom_point(aes(x = year, y = maxanomaly)) + geom_smooth(aes(x = year, y = maxanomaly)) 
+```
+
+```{r}
+
+```
+
