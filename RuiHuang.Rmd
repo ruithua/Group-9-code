@@ -60,6 +60,7 @@ ggplot() +
   geom_point(aes(x = timevector, y = maxtempvector))
 lrdf = data.frame(maxtempvector,timevector)
 lm(maxtempvector~timevector ,data = lrdf)
+ggplot(lrdf) + geom_boxplot(aes(maxtempvector))
 ```
 
 ```{r}
@@ -174,9 +175,12 @@ hwdf_notcomp = Heatwavedf %>%
   mutate(date = dates, date_char = as.character(date), year = as.numeric(format(date, '%Y'))) %>% 
   group_by(year) %>% 
   summarize(maxanomaly = max(anomalies)) %>% 
-  filter(maxanomaly > -0.5)
+  filter(maxanomaly > -0.5) %>% 
+  mutate(yearl = year-1993)
   
 ggplot(hwdf_notcomp) + geom_point(aes(x = year, y = maxanomaly)) + geom_smooth(aes(x = year, y = maxanomaly)) 
+ggplot(hwdf_notcomp) + geom_boxplot(aes(maxanomaly))
+lm(maxanomaly ~ yearl, hwdf_notcomp)
 ```
 
 ```{r}
@@ -190,10 +194,46 @@ onedf = onedf %>%
 ```
 
 ```{r}
-g_model3 = gam(percentcoverperc ~ maxtempvector + avgtempvector + s(maxanomaly, df = 1.2)+
+g_model3 = gam(percentcoverperc ~ maxtempvector+ avgtempvector + s(maxanomaly, df = 1.2)+
                  date_num,
             family = "binomial", data = onedf)
 summary(g_model3)
 plot(g_model3)
+```
+```{r}
+basemaxanomaly =  1.696917
+basemaxtemp = (17.28 + 18.8 + 18.98)/3
+baseavgtemp = (14.14165 + 14.53518 + 13.90583)/3
+```
+
+```{r}
+set.seed(1)
+start = 0.08
+changevector = rep(0, 8)
+for(i in 0:7){
+  changevector[i+1] = start + 0.1*i
+}
+nmt = rep(0,8)
+for(i in 1:8){
+  nmt[i] = basemaxtemp + changevector[i]
+}
+nat = rep(0,8)
+for(i in 1:8){
+  nat[i] = baseavgtemp + changevector[i]
+}
+anomalyv = rep(basemaxanomaly + rnorm(1, 0, 1),8)
+yr2050 = rep(2050-1993, 8)
+predict_df = data.frame(nmt, nat, anomalyv,yr2050)
+colnames(predict_df) = c('maxtempvector', 'avgtempvector', 'maxanomaly', 'date_num')
+```
+
+```{r}
+something = predict.Gam(g_model3, predict_df)
+something = exp(something)
+something = something/(1+something)
+finaldf = data.frame(something, changevector)
+finaldf = finaldf %>% 
+  mutate(percentcover = something * 100)
+ggplot(finaldf) + geom_point(aes(x = changevector, y = percentcover)) + geom_smooth(aes(x = changevector, y = percentcover))
 ```
 
