@@ -8,6 +8,7 @@ knitr::opts_chunk$set(echo = TRUE)
 library(terra)
 library(rerddap)
 library(tidyverse)
+library(gam)
 ```
 
 
@@ -59,6 +60,7 @@ ggplot() +
   geom_point(aes(x = timevector, y = maxtempvector))
 lrdf = data.frame(maxtempvector,timevector)
 lm(maxtempvector~timevector ,data = lrdf)
+ggplot(lrdf) + geom_boxplot(aes(maxtempvector))
 ```
 
 ```{r}
@@ -103,10 +105,6 @@ temporarydf = data.frame(date, avgtempvector, maxtempvector) # create a datafram
 onedf = full_join(onedf, temporarydf) # add the temperature data to the one dataframe
 ```
 ```{r}
-print("a")
-citation("base")
-```
-```{r}
 logit = function(x){
   return(log(x/(1-x)))
 }
@@ -118,6 +116,11 @@ onedf = onedf %>%
   mutate(date_num = as.numeric(str_sub(as.character(date),1,4))-1993)
 ```
 
+```{r}
+print("a")
+citation("base")
+```
+```{r}
 
 ```{r}
 ggplot(onedf, aes(x = maxtempvector, y = logit_percentcover)) +
@@ -153,10 +156,84 @@ summary(g_model)
 plot.Gam(g_model)
 ```
 ```{r}
-g_model2 = gam(percentcoverperc ~ s(maxtempvector, df=1) + s(avgtempvector, df =1) + s(anomalies, df = 2)+
-                 s(date_num, df=1),
+g_model2 = gam(percentcoverperc ~ s(maxtempvector, df=1.2) + avgtempvector + s(anomalies, df = 1.4)+
+                 date_num,
             family = "binomial", data = onedf)
 summary(g_model2)
 plot(g_model2)
+```
+
+```{r}
+hwdf_notcomp = Heatwavedf %>% 
+  mutate(x = x - 360) %>% 
+  filter(x >= -118.4 | x <= -120.4) %>% 
+  filter(y >= 32.8 & y <= 34.05) %>%
+  slice(18) %>% 
+   pivot_longer(cols = 3:5482,
+               names_to = "date",
+               values_to = "anomalies") %>% 
+  mutate(date = dates, date_char = as.character(date), year = as.numeric(format(date, '%Y'))) %>% 
+  group_by(year) %>% 
+  summarize(maxanomaly = max(anomalies)) %>% 
+  filter(maxanomaly > -0.5) %>% 
+  mutate(yearl = year-1993)
+  
+ggplot(hwdf_notcomp) + geom_point(aes(x = year, y = maxanomaly)) + geom_smooth(aes(x = year, y = maxanomaly)) 
+ggplot(hwdf_notcomp) + geom_boxplot(aes(maxanomaly))
+lm(maxanomaly ~ yearl, hwdf_notcomp)
+```
+
+```{r}
+
+```
+
+```{r}
+onedf = onedf %>% 
+  mutate(year = date_num + 1993) %>% 
+  full_join(hwdf_notcomp)
+```
+
+```{r}
+g_model3 = gam(percentcoverperc ~ maxtempvector+ avgtempvector + s(maxanomaly, df = 1.2)+
+                 date_num,
+            family = "binomial", data = onedf)
+summary(g_model3)
+plot(g_model3)
+```
+```{r}
+basemaxanomaly =  1.696917
+basemaxtemp = (17.28 + 18.8 + 18.98)/3
+baseavgtemp = (14.14165 + 14.53518 + 13.90583)/3
+```
+
+```{r}
+set.seed(1)
+start = 0.08
+changevector = rep(0, 8)
+for(i in 0:7){
+  changevector[i+1] = start + 0.1*i
+}
+nmt = rep(0,8)
+for(i in 1:8){
+  nmt[i] = basemaxtemp + changevector[i]
+}
+nat = rep(0,8)
+for(i in 1:8){
+  nat[i] = baseavgtemp + changevector[i]
+}
+anomalyv = rep(basemaxanomaly + rnorm(1, 0, 1),8)
+yr2050 = rep(2050-1993, 8)
+predict_df = data.frame(nmt, nat, anomalyv,yr2050)
+colnames(predict_df) = c('maxtempvector', 'avgtempvector', 'maxanomaly', 'date_num')
+```
+
+```{r}
+something = predict.Gam(g_model3, predict_df)
+something = exp(something)
+something = something/(1+something)
+finaldf = data.frame(something, changevector)
+finaldf = finaldf %>% 
+  mutate(percentcover = something * 100)
+ggplot(finaldf) + geom_point(aes(x = changevector, y = percentcover)) + geom_smooth(aes(x = changevector, y = percentcover))
 ```
 

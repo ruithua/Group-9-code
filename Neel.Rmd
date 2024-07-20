@@ -103,3 +103,4 @@ extremelogical = (onedf$anomalies >= 1) # create a vector of logical values to e
 onedf$is.heatwave = hwlogical
 onedf$is.extreme = extremelogical # adding vectors to onedf
 ```
+help
