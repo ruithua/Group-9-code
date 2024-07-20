@@ -51,9 +51,10 @@ hwdf_comp = Heatwavedf %>%
   pivot_longer(cols = 3:5482,
                names_to = "date",
                values_to = "anomalies") %>% # turns into a long format
-  mutate(date = dates, data_char = as.character(date)) %>% # adding the dates to the dataframe
-  filter(grepl("-07-01",data_char, fixed = TRUE)) %>% # filtering for July 1st
+  mutate(date = dates, data_char = as.character(date), year = as.numeric(format(date,'%Y')), month = as.numeric(format(date,'%m'))) %>% # adding the dates to the dataframe
+  filter(grepl("-07-01",data_char, fixed = TRUE)) %>% # filtering for July 1st 
   select(-data_char) # getting rid of the date as character variable (date as time is still there)
+
 ```
 
 Working with the temperature dataset (Jerry did this)
@@ -96,9 +97,9 @@ onedf = full_join(onedf, temporarydf) # add the temperature data to the one data
 ```
 Marine Heatwaves and Extreme Heatwaves
 ``` {r}
-hwlogical = onedf$anomalies >= 2
-extremelogical = onedf$anomalies >= 1
+hwlogical = (onedf$anomalies >= 2) # create a vector of logical values to express whether the anomaly represents a marine heatwave
+extremelogical = (onedf$anomalies >= 1) # create a vector of logical values to express whether the anomaly represents an extreme marine heatwave
 
-onedf$isheatwave = hwlogical
-onedf$isextreme = extremelogical
+onedf$is.heatwave = hwlogical
+onedf$is.extreme = extremelogical # adding vectors to onedf
 ```
