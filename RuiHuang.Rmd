@@ -236,4 +236,4 @@ finaldf = finaldf %>%
   mutate(percentcover = something * 100)
 ggplot(finaldf) + geom_point(aes(x = changevector, y = percentcover)) + geom_smooth(aes(x = changevector, y = percentcover))
 ```
-
+--end of code--
