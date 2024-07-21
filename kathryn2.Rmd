@@ -11,6 +11,7 @@ knitr::opts_chunk$set(echo = TRUE, message = FALSE)
 library(rerddap)
 library(terra)
 library(tidyverse)
+library(gam)
 ```
 
 
@@ -128,7 +129,9 @@ temporarydf = data.frame(date, avgtempvector, maxtempvector) # create a datafram
 onedf = full_join(onedf, temporarydf) # add the temperature data to the one dataframe
 ```
 
-Visualizing the different relationships ()
+#Visualizing the different relationships ()
+
+Each different independent variable (anomalies, average SST, max SST) will have (first) a graph with the variable on the x-axis  
 
 ```{r}
 ggplot(onedf, aes(x = anomalies, y = percentcover)) +
@@ -203,5 +206,76 @@ ggplot(onedf, aes(x = year, y = percentcoverperc)) +
   scale_fill_viridis_c(name = "maxtemp (ºC)") +
   theme_bw() +
   geom_smooth()
+```
+
+
+
+
+#Predictions
+
+
+```{r}
+g_model = gam(logit_percentcover ~ s(maxtempvector, df=7) + s(avgtempvector, df =4) + s(anomalies, df = 2) + date_num,
+            family = "gaussian", data = onedf)
+summary(g_model)
+```
+
+```{r}
+basemaxanomaly =  1.696917
+basemaxtemp = (17.28 + 18.8 + 18.98)/3
+baseavgtemp = (14.14165 + 14.53518 + 13.90583)/3
+```
+
+```{r}
+set.seed(1)
+start = 0.08
+changevector = rep(0, 8)
+for(i in 0:7){
+  changevector[i+1] = start + 0.1*i
+}
+
+# NMT is new max temperature
+nmt = rep(0,8)
+for(i in 1:8){
+  nmt[i] = basemaxtemp + changevector[i]
+}
+
+# NAT is new average temeprature
+nat = rep(0,8)
+for(i in 1:8){
+  nat[i] = baseavgtemp + changevector[i]
+}
+
+#Assuming normal distributon to determine if there's a heatwave
+anomalyv = rep(basemaxanomaly + rnorm(1, 0, 1),8)
+yr2050 = rep(2050-1993, 8)
+
+predict_df = data.frame(nmt, nat, anomalyv, yr2050)
+colnames(predict_df) = c('maxtempvector', 'avgtempvector', 'maxanomaly', 'date_num')
+```
+
+```{r}
+kelpPredictions = predict.Gam(g_model3, predict_df)
+kelpPredictions = exp(kelpPredictions)
+kelpPredictions = kelpPredictions/(1+kelpPredictions)
+finaldf = data.frame(predict_df, kelpPredictions)
+#finaldf = finaldf %>% 
+  #mutate(percentcover = kelpPredictions * 100)
+#ggplot(finaldf) + geom_point(aes(x = changevector, y = percentcover)) + geom_smooth(aes(x = changevector, y = percentcover))
+```
+
+Loading in marignaleffects to use plot_predictions to graph
+```{r}
+library(marginaleffects)
+```
+
+```{r}
+ggplot(finaldf) +
+  geom_point(mapping = aes(x = , y = kelpPredictions))
+```
+
+
+```{r}
+plot_predictions(g_model3, by = c("percentcoverperc", "avgtempvector"))
 ```
 
