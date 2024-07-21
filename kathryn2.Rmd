@@ -127,3 +127,81 @@ temporarydf = data.frame(date, avgtempvector, maxtempvector) # create a datafram
 
 onedf = full_join(onedf, temporarydf) # add the temperature data to the one dataframe
 ```
+
+Visualizing the different relationships ()
+
+```{r}
+ggplot(onedf, aes(x = anomalies, y = percentcover)) +
+  geom_point(aes(alpha = 0.15)) +
+  labs(title = "anomalies 1 (by anomalie)") +
+  ylim(0,75) +
+  theme_bw() +
+  geom_smooth()
+```
+
+```{r}
+ggplot(onedf, aes(x = year, y = percentcoverperc)) +
+  geom_point(aes(color = maxanomaly, alpha = 0.15)) +
+  labs(title = "kelp cover by anomalies by year", x = "Year", y = "percent cover") +
+  scale_fill_viridis_c(name = "Anomalies (ºC)") +
+  theme_bw() +
+  geom_smooth()
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+```{r}
+ggplot(onedf, aes(x = avgtempvector, y = percentcover)) +
+  geom_point(aes(alpha = 0.15)) +
+  labs(title = "avg temp 1 (by avg temp)") +
+  theme_bw() +
+  geom_smooth()
+```
+
+```{r}
+ggplot(onedf, aes(x = year, y = percentcoverperc)) +
+  geom_point(aes(color = avgtempvector, alpha = 0.15)) +
+  labs(title = "kelp cover by avg temp by year", x = "Year", y = "percent cover") +
+  scale_fill_viridis_c(name = "avg temp (ºC)") +
+  theme_bw() +
+  geom_smooth()
+```
+
+
+
+
+
+
+
+
+
+
+
+
+```{r}
+ggplot(onedf, aes(x = maxtempvector, y = percentcover)) +
+  geom_point(aes(alpha = 0.15)) +
+  labs(title = "max temp 1 (by max temp)") +
+  theme_bw() +
+  geom_smooth()
+```
+
+```{r}
+ggplot(onedf, aes(x = year, y = percentcoverperc)) +
+  geom_point(aes(color = maxtempvector, alpha = 0.15)) +
+  labs(title = "kelp cover by maxtemp by year", x = "Year", y = "percent cover") +
+  scale_fill_viridis_c(name = "maxtemp (ºC)") +
+  theme_bw() +
+  geom_smooth()
+```
+
