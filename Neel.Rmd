@@ -9,6 +9,7 @@ knitr::opts_chunk$set(echo = TRUE, message = FALSE)
 library(rerddap)
 library(terra)
 library(tidyverse)
+library(patchwork)
 ```
 
 Hello, have a good day! I hope you are well.
@@ -103,4 +104,179 @@ extremelogical = (onedf$anomalies >= 1) # create a vector of logical values to e
 onedf$is.heatwave = hwlogical
 onedf$is.extreme = extremelogical # adding vectors to onedf
 ```
-help
+
+```{r}
+logit = function(x){
+  return(log(x/(1-x)))
+}
+
+onedf = onedf %>% 
+  filter(percentcover != 0) %>% 
+  mutate(logit_percentcover = logit(0.01 * percentcover)) %>% 
+  mutate(percentcoverperc = 0.01 * percentcover) %>% 
+  mutate(date_num = as.numeric(str_sub(as.character(date),1,4))-1993)
+```
+
+```{r}
+ggplot(onedf, aes(x = maxtempvector, y = logit_percentcover)) +
+  geom_point() +
+  geom_smooth()
+ggplot(onedf, aes(x = avgtempvector, y = logit_percentcover)) +
+  geom_point() +
+  geom_smooth()
+ggplot(onedf, aes(x = anomalies, y = logit_percentcover)) +
+  geom_point() +
+  geom_smooth()
+ggplot(onedf, aes(x = date_num, y = logit_percentcover)) +
+  geom_point() +
+  geom_smooth()
+cor.test(onedf$avgtempvector, onedf$logit_percentcover)
+cor.test(onedf$maxtempvector, onedf$logit_percentcover)
+cor.test(onedf$anomalies, onedf$logit_percentcover)
+```
+
+%
+```{r}
+library(gam)
+
+```
+
+```{r}
+#g_model = gam(logit_percentcover ~ s(maxtempvector, df=7) + s(avgtempvector, df =4) + s(anomalies, df = 2) + date_num,
+            #family = "gaussian", data = onedf)
+#summary(g_model)
+```
+
+```{r}
+#plot.Gam(g_model)
+```
+```{r}
+#g_model2 = gam(percentcoverperc ~ s(maxtempvector, df=1.2) + avgtempvector + s(anomalies, df = 1.4)+
+#                 date_num,
+#            family = "binomial", data = onedf)
+#summary(g_model2)
+#plot(g_model2)
+```
+
+```{r}
+hwdf_notcomp = Heatwavedf %>% 
+  mutate(x = x - 360) %>% 
+  filter(x >= -118.4 | x <= -120.4) %>% 
+  filter(y >= 32.8 & y <= 34.05) %>%
+  slice(18) %>% 
+   pivot_longer(cols = 3:5482,
+               names_to = "date",
+               values_to = "anomalies") %>% 
+  mutate(date = dates, date_char = as.character(date), year = as.numeric(format(date, '%Y'))) %>% 
+  group_by(year) %>% 
+  summarize(maxanomaly = max(anomalies)) %>% 
+  filter(maxanomaly > -0.5) %>% 
+  mutate(yearl = year-1993)
+  
+ggplot(hwdf_notcomp) + geom_point(aes(x = year, y = maxanomaly)) + geom_smooth(aes(x = year, y = maxanomaly)) 
+ggplot(hwdf_notcomp) + geom_boxplot(aes(maxanomaly))
+lm(maxanomaly ~ yearl, hwdf_notcomp)
+```
+
+```{r}
+onedf = onedf %>% 
+  mutate(year = date_num + 1993) %>% 
+  full_join(hwdf_notcomp)
+```
+
+```{r}
+g_model3 = gam(percentcoverperc ~ maxtempvector+ avgtempvector + s(maxanomaly, df = 1.2) +
+                 date_num,
+            family = "binomial", data = onedf)
+summary(g_model3)
+plot.Gam(g_model3, ylab = "Effect on GAM", xlab = "Maximum Temperature (°C)")
+```
+
+``` {r}
+
+a = ggplot(onedf, aes(x = year, y = meanpercentcover)) + geom_point() + geom_smooth() + theme_bw() + labs(x = "Year", y = "Percent Cover")
+b = ggplot(onedf, aes(x = avgtempvector, y = meanpercentcover)) + geom_point() + geom_smooth() + theme_bw() + labs(x = "avg temp", y = "Percent Cover")
+c = ggplot(onedf, aes(x = maxtempvector, y = meanpercentcover)) + geom_point() + geom_smooth() + theme_bw() + labs(x = "max temp", y = "Percent Cover")
+d = ggplot(onedf, aes(x = anomalies, y = meanpercentcover)) + geom_point() + geom_smooth() + theme_bw() + labs(x = "avg anomaly", y = "Percent Cover")
+
+(a + b) / (c + d)
+
+e = ggplot(onedf, aes(x = year, y = meanpercentcover)) + geom_boxplot()
+f = ggplot(onedf, aes(x = avgtempvector, y = meanpercentcover)) + geom_boxplot()
+g = ggplot(onedf, aes(x = maxtempvector, y = meanpercentcover)) + geom_boxplot()
+h = ggplot(onedf, aes(x = anomalies, y = meanpercentcover)) + geom_boxplot()
+
+(e + f) / (g + h)
+
+onedf2 = onedf %>% 
+  filter(year != 1993)
+
+i = ggplot(onedf2, aes(x = year, y = meanpercentcover)) + geom_point() + geom_smooth() + theme_bw() + labs(x = "Year - 1993", y = "Percent Cover")
+j = ggplot(onedf2, aes(x = avgtempvector, y = meanpercentcover)) + geom_point() + geom_smooth() + theme_bw() + labs(x = "avg temp - 1993", y = "Percent Cover")
+k = ggplot(onedf2, aes(x = maxtempvector, y = meanpercentcover)) + geom_point() + geom_smooth() + theme_bw() + labs(x = "max temp - 1993", y = "Percent Cover")
+m = ggplot(onedf2, aes(x = anomalies, y = meanpercentcover)) + geom_point() + geom_smooth() + theme_bw() + labs(x = "avg anomaly - 1993", y = "Percent Cover")
+
+(a + i) / (b + j) / (c + k) / (d + m)
+```
+
+
+
+```{r}
+basemaxanomaly =  1.696917
+basemaxtemp = (17.28 + 18.8 + 18.98)/3
+baseavgtemp = (14.14165 + 14.53518 + 13.90583)/3
+```
+
+```{r}
+set.seed(1)
+start = 0.08
+changevector = rep(0, 8)
+for(i in 0:7){
+  changevector[i+1] = start + 0.1*i
+}
+nmt = rep(0,8)
+for(i in 1:8){
+  nmt[i] = basemaxtemp + changevector[i]
+}
+nat = rep(0,8)
+for(i in 1:8){
+  nat[i] = baseavgtemp + changevector[i]
+}
+anomalyv = rep(basemaxanomaly + rnorm(1, 0, 1),8)
+yr2050 = rep(2050-1993, 8)
+predict_df = data.frame(nmt, nat, anomalyv,yr2050)
+colnames(predict_df) = c('maxtempvector', 'avgtempvector', 'maxanomaly', 'date_num')
+```
+
+```{r}
+something = predict.Gam(g_model3, predict_df)
+something = exp(something)
+something = something/(1+something)
+finaldf = data.frame(something, changevector)
+finaldf = finaldf %>% 
+  mutate(percentcover = something * 100) %>% 
+  mutate(changevector = changevector * 10)
+ggplot(finaldf) + geom_point(aes(x = changevector, y = percentcover)) + geom_smooth(aes(x = changevector, y = percentcover)) + labs(x = "RCP", y = "Giant Kelp Percent Cover", title = "Kelp Cover Under Different RCPs") + theme_bw() + ylim(2.4, 2.8)
+```
+
+```{r}
+at = rep(baseavgtemp + 0.78, 33)
+mt = rep(baseavgtemp + 0.78, 33)
+anom = rep(0, 33)
+for(i in 1: 33){
+  anom[i] = basemaxanomaly + 0.1* (i-1)
+}
+yr2050_2 = rep(2050-1993, 33)
+predict2_df = data.frame(mt, at, anom, yr2050_2)
+colnames(predict2_df) = c('maxtempvector', 'avgtempvector', 'maxanomaly', 'date_num')
+```
+
+```{r}
+preds = predict.Gam(g_model3, predict2_df)
+preds = exp(preds)
+preds = preds/(1+preds)
+final2df = data.frame(preds, anom)
+final2df = final2df %>% 
+  mutate(percentcover = preds *100)
+ggplot(final2df) + geom_point(aes(x = anom, y = percentcover)) + geom_smooth(aes(x = anom, y = percentcover)) + labs(x = "Maximum Heat Wave Intensity (Anomaly in °C)", y = "Giant Kelp Percent Cover", title = "Kelp Cover Under RPC 8.5 Conditions") + theme_bw()
+```
