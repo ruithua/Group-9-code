@@ -120,7 +120,7 @@ onedf = onedf %>%
 print("a")
 citation("base")
 ```
-```{r}
+
 
 ```{r}
 ggplot(onedf, aes(x = maxtempvector, y = logit_percentcover)) +
@@ -237,3 +237,34 @@ finaldf = finaldf %>%
 ggplot(finaldf) + geom_point(aes(x = changevector, y = percentcover)) + geom_smooth(aes(x = changevector, y = percentcover))
 ```
 --end of code--
+
+
+```{r}
+at = rep(baseavgtemp + 0.78, 33)
+mt = rep(baseavgtemp + 0.78, 33)
+anom = rep(0, )
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
