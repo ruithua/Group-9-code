@@ -242,9 +242,24 @@ ggplot(finaldf) + geom_point(aes(x = changevector, y = percentcover)) + geom_smo
 ```{r}
 at = rep(baseavgtemp + 0.78, 33)
 mt = rep(baseavgtemp + 0.78, 33)
-anom = rep(0, )
+anom = rep(0, 33)
+for(i in 1: 33){
+  anom[i] = basemaxanomaly + 0.1* (i-1)
+}
+yr2050_2 = rep(2050-1993, 33)
+predict2_df = data.frame(mt, at, anom, yr2050_2)
+colnames(predict2_df) = c('maxtempvector', 'avgtempvector', 'maxanomaly', 'date_num')
 ```
 
+```{r}
+preds = predict.Gam(g_model3, predict2_df)
+preds = exp(preds)
+preds = preds/(1+preds)
+final2df = data.frame(preds, anom)
+final2df = final2df %>% 
+  mutate(percentcover = preds *100)
+ggplot(final2df) + geom_point(aes(x = anom, y = percentcover)) + geom_smooth(aes(x = anom, y = percentcover))
+```
 
 
 
