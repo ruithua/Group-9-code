@@ -189,34 +189,24 @@ g_model3 = gam(percentcoverperc ~ maxtempvector+ avgtempvector + s(maxanomaly, d
                  date_num,
             family = "binomial", data = onedf)
 summary(g_model3)
-plot.Gam(g_model3, ylab = "Effect on GAM", xlab = "Maximum Temperature (°C)")
+# graph 1 is maximum temp. graph 2 is average temp. graph 3 is maximum anomaly. graph 4 is years.
+#plot.Gam(g_model3, ylab = "Effect on GAM", xlab = "Maximum Temperature (°C)", main = "Effect of Maximum Temperature on Model")
+#plot.Gam(g_model3, ylab = "Effect on GAM", xlab = "Average Temperature (°C)", main = "Effect of Average Temperature on Model")
+plot.Gam(g_model3, ylab = "Effect on GAM", xlab = "Maximum Anomaly (°C)", main = "Effect of Heatwaves on Model")
+#plot.Gam(g_model3, ylab = "Effect on GAM", xlab = "Years since 1993", main = "Effect of Time on Model")
 ```
 
 ``` {r}
-
-a = ggplot(onedf, aes(x = year, y = meanpercentcover)) + geom_point() + geom_smooth() + theme_bw() + labs(x = "Year", y = "Percent Cover")
-b = ggplot(onedf, aes(x = avgtempvector, y = meanpercentcover)) + geom_point() + geom_smooth() + theme_bw() + labs(x = "avg temp", y = "Percent Cover")
-c = ggplot(onedf, aes(x = maxtempvector, y = meanpercentcover)) + geom_point() + geom_smooth() + theme_bw() + labs(x = "max temp", y = "Percent Cover")
-d = ggplot(onedf, aes(x = anomalies, y = meanpercentcover)) + geom_point() + geom_smooth() + theme_bw() + labs(x = "avg anomaly", y = "Percent Cover")
-
-(a + b) / (c + d)
-
-e = ggplot(onedf, aes(x = year, y = meanpercentcover)) + geom_boxplot()
-f = ggplot(onedf, aes(x = avgtempvector, y = meanpercentcover)) + geom_boxplot()
-g = ggplot(onedf, aes(x = maxtempvector, y = meanpercentcover)) + geom_boxplot()
-h = ggplot(onedf, aes(x = anomalies, y = meanpercentcover)) + geom_boxplot()
-
-(e + f) / (g + h)
-
 onedf2 = onedf %>% 
   filter(year != 1993)
 
-i = ggplot(onedf2, aes(x = year, y = meanpercentcover)) + geom_point() + geom_smooth() + theme_bw() + labs(x = "Year - 1993", y = "Percent Cover")
-j = ggplot(onedf2, aes(x = avgtempvector, y = meanpercentcover)) + geom_point() + geom_smooth() + theme_bw() + labs(x = "avg temp - 1993", y = "Percent Cover")
-k = ggplot(onedf2, aes(x = maxtempvector, y = meanpercentcover)) + geom_point() + geom_smooth() + theme_bw() + labs(x = "max temp - 1993", y = "Percent Cover")
-m = ggplot(onedf2, aes(x = anomalies, y = meanpercentcover)) + geom_point() + geom_smooth() + theme_bw() + labs(x = "avg anomaly - 1993", y = "Percent Cover")
+a = ggplot(onedf2, aes(x = year, y = meanpercentcover)) + geom_point() + geom_smooth() + theme_bw() + labs(x = "Year", y = "Percent Cover", title = "Giant Kelp Percent Cover Compared to Variables")
+b = ggplot(onedf2, aes(x = avgtempvector, y = meanpercentcover)) + geom_point() + geom_smooth() + theme_bw() + labs(x = "Average Temperature (°C)", y = "Percent Cover")
+c = ggplot(onedf2, aes(x = maxtempvector, y = meanpercentcover)) + geom_point() + geom_smooth() + theme_bw() + labs(x = "Maximum Temperature (°C)", y = "Percent Cover")
+d = ggplot(onedf2, aes(x = anomalies, y = meanpercentcover)) + geom_point() + geom_smooth() + theme_bw() + labs(x = "Average Anomaly (°C)", y = "Percent Cover")
+e = ggplot(onedf2, aes(x = maxanomaly, y = meanpercentcover)) + geom_point() + geom_smooth() + theme_bw() + labs(x = "Maximum Anomaly (°C)", y = "Percent Cover")
 
-(a + i) / (b + j) / (c + k) / (d + m)
+(a) / (b + c) / (d + e)
 ```
 
 
@@ -254,9 +244,8 @@ something = exp(something)
 something = something/(1+something)
 finaldf = data.frame(something, changevector)
 finaldf = finaldf %>% 
-  mutate(percentcover = something * 100) %>% 
-  mutate(changevector = changevector * 10)
-ggplot(finaldf) + geom_point(aes(x = changevector, y = percentcover)) + geom_smooth(aes(x = changevector, y = percentcover)) + labs(x = "RCP", y = "Giant Kelp Percent Cover", title = "Kelp Cover Under Different RCPs") + theme_bw() + ylim(2.4, 2.8)
+  mutate(percentcover = something * 100)
+ggplot(finaldf) + geom_point(aes(x = changevector, y = percentcover)) + geom_smooth(aes(x = changevector, y = percentcover)) + labs(x = "Net Average SST Change (°C)", y = "Giant Kelp Percent Cover", title = "Kelp Cover in 2050", subtitle = "Under Different Warming Scenarios") + theme_bw() + ylim(1.8, 1.9)
 ```
 
 ```{r}
