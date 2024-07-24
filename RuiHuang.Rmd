@@ -260,6 +260,23 @@ final2df = final2df %>%
   mutate(percentcover = preds *100)
 ggplot(final2df) + geom_point(aes(x = anom, y = percentcover)) + geom_smooth(aes(x = anom, y = percentcover))
 ```
+```{r}
+
+library(marginaleffects)
+citation("marginaleffects")
+```
+
+
+```{r}
+p1 <- plot_slopes(g_model3, by = "maxanomaly", variables = "maxanomaly") +
+  labs(x = "Maximum MHW intensity", y = "change in prediction")
+
+p2 <- plot_slopes(g_model3, variables = "date_num", by = "date_num") + labs(x = "years after 1993", y = "change in prediction")
+
+p3 <- plot_slopes(g_model3, variables = "avgtempvector", by = "avgtempvector") + labs(x = "average temperature", y = "change in prediction")
+
+p4 <- plot_slopes(g_model3, variables = "maxtempvector", by = "maxtempvector")  + labs(x = "maximum temperature ", y = "change in prediction")
+```
 
 
 
@@ -282,4 +299,23 @@ ggplot(final2df) + geom_point(aes(x = anom, y = percentcover)) + geom_smooth(aes
 
 
 
+
+```{r}
+library(patchwork)
+(p1 + p2) /
+  (p3 + p4) +
+  plot_annotation(tag_levels = "A")
+```
+```{r}
+p1
+```
+```{r}
+p2
+```
+```{r}
+p3
+```
+```{r}
+p4
+```
 
