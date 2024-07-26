@@ -191,8 +191,8 @@ g_model3 = gam(percentcoverperc ~ maxtempvector+ avgtempvector + s(maxanomaly, d
 summary(g_model3)
 # graph 1 is maximum temp. graph 2 is average temp. graph 3 is maximum anomaly. graph 4 is years.
 #plot.Gam(g_model3, ylab = "Effect on GAM", xlab = "Maximum Temperature (°C)", main = "Effect of Maximum Temperature on Model")
-#plot.Gam(g_model3, ylab = "Effect on GAM", xlab = "Average Temperature (°C)", main = "Effect of Average Temperature on Model")
-plot.Gam(g_model3, ylab = "Effect on GAM", xlab = "Maximum Anomaly (°C)", main = "Effect of Heatwaves on Model")
+plot.Gam(g_model3, ylab = "Effect on GAM", xlab = "Average Temperature (°C)", main = "Effect of Average Temperature on Model")
+#plot.Gam(g_model3, ylab = "Effect on GAM", xlab = "Maximum Anomaly (°C)", main = "Effect of Heatwaves on Model")
 #plot.Gam(g_model3, ylab = "Effect on GAM", xlab = "Years since 1993", main = "Effect of Time on Model")
 ```
 
@@ -200,11 +200,11 @@ plot.Gam(g_model3, ylab = "Effect on GAM", xlab = "Maximum Anomaly (°C)", main 
 onedf2 = onedf %>% 
   filter(year != 1993)
 
-a = ggplot(onedf2, aes(x = year, y = meanpercentcover)) + geom_point() + geom_smooth() + theme_bw() + labs(x = "Year", y = "Percent Cover", title = "Giant Kelp Percent Cover Compared to Variables")
-b = ggplot(onedf2, aes(x = avgtempvector, y = meanpercentcover)) + geom_point() + geom_smooth() + theme_bw() + labs(x = "Average Temperature (°C)", y = "Percent Cover")
-c = ggplot(onedf2, aes(x = maxtempvector, y = meanpercentcover)) + geom_point() + geom_smooth() + theme_bw() + labs(x = "Maximum Temperature (°C)", y = "Percent Cover")
-d = ggplot(onedf2, aes(x = anomalies, y = meanpercentcover)) + geom_point() + geom_smooth() + theme_bw() + labs(x = "Average Anomaly (°C)", y = "Percent Cover")
-e = ggplot(onedf2, aes(x = maxanomaly, y = meanpercentcover)) + geom_point() + geom_smooth() + theme_bw() + labs(x = "Maximum Anomaly (°C)", y = "Percent Cover")
+a = ggplot(onedf2, aes(x = year, y = meanpercentcover)) + geom_point() + geom_smooth() + theme_bw() + labs(x = "Year", y = "Percent Cover")+ ggtitle("Time") + scale_x_continuous(breaks = seq(1994, 2007, by = 1))
+b = ggplot(onedf2, aes(x = avgtempvector, y = meanpercentcover)) + geom_point() + geom_smooth() + theme_bw() + labs(x = "Average Temperature (°C)", y = "Percent Cover") + ggtitle("SST")
+c = ggplot(onedf2, aes(x = maxtempvector, y = meanpercentcover)) + geom_point() + geom_smooth() + theme_bw() + labs(x = "Maximum Temperature (°C)", y = "Percent Cover") + scale_x_continuous(breaks = seq(17, 21, by = 1))
+d = ggplot(onedf2, aes(x = anomalies, y = meanpercentcover)) + geom_point() + geom_smooth() + theme_bw() + labs(x = "Average Anomaly (°C)", y = "Percent Cover") + ggtitle ("MHWs")
+e = ggplot(onedf2, aes(x = maxanomaly, y = meanpercentcover)) + geom_point() + geom_smooth() + theme_bw() + labs(x = "Maximum Anomaly (°C)", y = "Percent Cover") + scale_x_continuous(breaks = seq(0, 3, by = 0.5))
 
 (a) / (b + c) / (d + e)
 ```
@@ -267,5 +267,5 @@ preds = preds/(1+preds)
 final2df = data.frame(preds, anom)
 final2df = final2df %>% 
   mutate(percentcover = preds *100)
-ggplot(final2df) + geom_point(aes(x = anom, y = percentcover)) + geom_smooth(aes(x = anom, y = percentcover)) + labs(x = "Maximum Heat Wave Intensity (Anomaly in °C)", y = "Giant Kelp Percent Cover", title = "Kelp Cover Under RPC 8.5 Conditions") + theme_bw()
+ggplot(final2df) + geom_point(aes(x = anom, y = percentcover)) + geom_smooth(aes(x = anom, y = percentcover)) + labs(x = "Maximum Heat Wave Intensity (Anomaly in °C)", y = "Giant Kelp Percent Cover", title = "Kelp Cover Under RCP 8.5 Conditions") + theme_bw()
 ```
